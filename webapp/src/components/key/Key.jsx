@@ -254,6 +254,28 @@ function KeyInternal(props) {
 		tapButtonRef.current?.focus();
 	}, []);
 
+	// Prevent any mousedown on non-input elements from moving focus away from
+	// the tap button. Using the capture phase ensures this fires before the
+	// browser applies the default focus-change behaviour. Click events are
+	// unaffected, so every button and interactive element still works normally.
+	React.useEffect(() => {
+		function preventFocusStealing(e) {
+			const target = e.target;
+			if (
+				target?.tagName === "INPUT" ||
+				target?.tagName === "TEXTAREA" ||
+				target?.isContentEditable
+			) {
+				return;
+			}
+			e.preventDefault();
+		}
+		document.addEventListener("mousedown", preventFocusStealing, true);
+		return () => {
+			document.removeEventListener("mousedown", preventFocusStealing, true);
+		};
+	}, []);
+
 	// Re-focus the tap button when it loses focus, unless focus moves to a text input
 	function handleBlur(e) {
 		const target = e.relatedTarget;
