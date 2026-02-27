@@ -247,18 +247,40 @@ function KeyInternal(props) {
 		};
 	}, [settings, up, down]);
 
+	const tapButtonRef = React.useRef(null);
+
+	// Focus the tap button on mount so spacebar always activates it
+	React.useEffect(() => {
+		tapButtonRef.current?.focus();
+	}, []);
+
+	// Re-focus the tap button when it loses focus, unless focus moves to a text input
+	function handleBlur(e) {
+		const target = e.relatedTarget;
+		if (
+			target?.tagName === "INPUT" ||
+			target?.tagName === "TEXTAREA" ||
+			target?.isContentEditable
+		) {
+			return;
+		}
+		tapButtonRef.current?.focus();
+	}
+
 	const leftButtonText = settings.key_mode === "yambic" ? "dot" : "key";
 	const rightButtonText = "dash";
 
 	return (
 		<>
 			<button
+				ref={tapButtonRef}
 				className={styles.key_bt}
 				onTouchStart={(e) => mouseDown(e, true)}
 				onTouchEnd={(e) => mouseUp(e, true)}
 				onMouseDown={(e) => mouseDown(e, true)}
 				onMouseUp={(e) => mouseUp(e, true)}
 				onContextMenu={(e) => e.preventDefault()}
+				onBlur={handleBlur}
 			>
 				{leftButtonText}
 			</button>
